@@ -1,0 +1,14 @@
+[Unit]
+Description=POW daemon
+Wants=network.target
+After=network.target
+After=syslog.target
+
+[Service]
+User=pow
+BusName=cx.pow.powd
+ExecStart=<%= process.execPath %> <%= @bin %>
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
