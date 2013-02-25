@@ -24,6 +24,7 @@ module.exports = class DnsServer extends dnsserver.Server
   # least).
   listen: (port, callback) ->
     @bind port
+    console.log "Serving DNS for: " + @configuration.dnsDomainPattern
     callback?()
 
   # Each incoming DNS request ends up here. If it's an `A` query
@@ -36,8 +37,10 @@ module.exports = class DnsServer extends dnsserver.Server
     q = req.question ? {}
 
     if q.type is NS_T_A and q.class is NS_C_IN and pattern.test q.name
+      console.log "Handled: " + q.name
       res.addRR q.name, NS_T_A, NS_C_IN, 600, "127.0.0.1"
     else
+      console.log "NOT handled: " + q.name
       res.header.rcode = NS_RCODE_NXDOMAIN
 
     res.send()
