@@ -1,10 +1,10 @@
 { "name": "pow"
-, "description": "Zero-configuration Rack server for Mac OS X"
-, "version": "0.4.0"
+, "description": "Zero-configuration Rack server for Linux"
+, "version": "0.4.1-linux"
 , "author": "Sam Stephenson"
 , "repository":
   { "type": "git"
-  , "url": "http://github.com/sstephenson/pow.git"
+  , "url": "http://github.com/benizi/pow.git"
   }
 , "bin": { "pow": "./bin/pow" }
 , "main": "./lib/index.js"

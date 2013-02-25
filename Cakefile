@@ -31,9 +31,9 @@ buildTemplates = (callback) ->
     compile("http_server/rackup_file_missing.html")
     compile("http_server/rvm_deprecation_notice.html")
     compile("http_server/welcome.html")
-    compile("installer/cx.pow.firewall.plist")
-    compile("installer/cx.pow.powd.plist")
-    compile("installer/resolver")
+    compile("installer/cx.pow.firewall.service")
+    compile("installer/cx.pow.powd.service")
+    compile("installer/resolv.conf")
   ], callback
 
 task 'docs', 'Generate annotated source code with Docco', ->
@@ -96,7 +96,7 @@ task 'install', 'Install pow configuration files', ->
           if err
             callback err
           else
-            sh "sudo launchctl load /Library/LaunchDaemons/cx.pow.firewall.plist", callback
+            sh "sudo systemctl start /etc/systemd/system/cx.pow.firewall.service", callback
       else
         callback()
 
@@ -105,13 +105,13 @@ task 'install', 'Install pow configuration files', ->
     console.error "*** Installed"
 
 task 'start', 'Start pow server', ->
-  agent = "#{process.env['HOME']}/Library/LaunchAgents/cx.pow.powd.plist"
+  agent = "#{process.env['HOME']}/.config/systemd/cx.pow.powd.service"
   console.error "*** Starting the Pow server..."
-  exec "launchctl load '#{agent}'", (err, stdout, stderr) ->
+  exec "systemctl --user start '#{agent}'", (err, stdout, stderr) ->
     console.error stderr if err
 
 task 'stop', 'Stop pow server', ->
-  agent = "#{process.env['HOME']}/Library/LaunchAgents/cx.pow.powd.plist"
+  agent = "#{process.env['HOME']}/.config/systemd/cx.pow.powd.service"
   console.error "*** Stopping the Pow server..."
-  exec "launchctl unload '#{agent}'", (err, stdout, stderr) ->
+  exec "systemctl stop '#{agent}'", (err, stdout, stderr) ->
     console.error stderr if err

@@ -1,69 +1,42 @@
 #!/bin/sh
-#                       W
-#                      R RW        W.
-#                    RW::::RW    DR::R
-#         :RRRRRWWWWRt:::::::RRR::::::E        jR
-#          R.::::::::::::::::::::::::::Ri  jiR:::R
-#           R:::::::.RERRRRWWRERR,::::::Efi:::::::R             GjRRR Rj
-#            R::::::.R             R:::::::::::::;G    RRj    WWR    RjRRRRj
-#            Rt::::WR      RRWR     R::::::::::::::::fWR::R;  WRW    RW    R
-#        WWWWRR:::EWR     E::W     WRRW:::EWRRR::::::::: RRED WR    RRW   RR
-#        'R:::::::RRR            RR     DWW   R::::::::RW   LRRR    WR    R
-#          RL:::::WRR       GRWRR        RR   R::WRiGRWW    RRR    RRR   R
-#            Ri:::WWD    RWRRRWW   WWR   LR   R W    RR    RRRR    RR    R
-#   RRRWWWWRE;,:::WW     R:::RW   RR:W   RR   ERE    RR    RRR    RRR    R
-#    RR:::::::::::RR    tR:::WR   Wf:R   RW    R     R     RRR    RR    R
-#      WR::::::::tRR    WR::RW   ER.R   RRR       R       RRRR    RR    R
-#         WE:::::RR     R:::RR   :RW   E RR      RW;     GRRR    RR    R
-#         R.::::,WR     R:::GRW       E::RR     WiWW     RRWR   LRRWWRR
-#       WR::::::RRRRWRG::::::RREWDWRj::::RW  ,WR::WR    iRWWWWWRWW    R
-#     LR:::::::::::::::::::::::::::::::::EWRR::::::RRRDi:::W    RR   R
-#    R:::::::::::::::::::::::::::::::::::::::::::::::::::tRW   RRRWWWW
-#  RRRRRRRRRRR::::::::::::::::::::::::::::::::::::,:::DE RRWRWW,
-#            R::::::::::::: RW::::::::R::::::::::RRWRRR
-#            R::::::::::WR.  ;R::::;R  RWi:::::ER
-#            R::::::.RR       Ri:iR       RR:,R
-#            E::: RE           RW           Y
-#            ERRR
-#            G       Zero-configuration Rack server for Mac OS X
-#                    http://pow.cx/
+# This is a hacked version to work under Linux.  If this eventually works like
+# "real" Pow, I'll come back and fix this to properly work under either
+# environment, but for now, it will only work under Linux.
 #
-#     This is the installation script for Pow.
-#     See the full annotated source: http://pow.cx/docs/
-#
-#     Install Pow by running this command:
-#     curl get.pow.cx | sh
-#
-#     Uninstall Pow: :'(
-#     curl get.pow.cx/uninstall.sh | sh
+# Also, it doesn't download pow -- ...we're in a git repo
 
 
 # Set up the environment. Respect $VERSION if it's set.
 
       set -e
-      POW_ROOT="$HOME/Library/Application Support/Pow"
-      NODE_BIN="$POW_ROOT/Current/bin/node"
-      POW_BIN="$POW_ROOT/Current/bin/pow"
-      [[ -z "$VERSION" ]] && VERSION=0.4.0
-
-
-# Fail fast if we're not on OS X >= 10.6.0.
-
-      if [ "$(uname -s)" != "Darwin" ]; then
-        echo "Sorry, Pow requires Mac OS X to run." >&2
+      : ${POW_ROOT="$HOME/Pow"}
+      if hash node 2>&- ; then
+        NODE_BIN="$(which node)"
+      else
+        echo "Linux version requires that 'node' is installed." >&2
         exit 1
-      elif [ "$(expr "$(sw_vers -productVersion | cut -f 2 -d .)" \>= 6)" = 0 ]; then
-        echo "Pow requires Mac OS X 10.6 or later." >&2
+      fi
+      POW_BIN="$POW_ROOT/Current/bin/pow"
+      [[ -z "$VERSION" ]] && VERSION=0.4.1-linux
+
+
+# Fail fast if we're not on Linux
+
+      if [ "$(uname -s)" != "Linux" ]; then
+        echo "Sorry, this version of Pow requires Linux to run." >&2
         exit 1
       fi
 
       echo "*** Installing Pow $VERSION..."
 
-
 # Create the Pow directory structure if it doesn't already exist.
 
       mkdir -p "$POW_ROOT/Hosts" "$POW_ROOT/Versions"
 
+
+# Save the current working dir (git)
+
+      GIT_SOURCE=$(pwd)
 
 # If the requested version of Pow is already installed, remove it first.
 
@@ -71,9 +44,9 @@
       rm -rf "$POW_ROOT/Versions/$VERSION"
 
 
-# Download the requested version of Pow and unpack it.
+# No download needed... in git
 
-      curl -s http://get.pow.cx/versions/$VERSION.tar.gz | tar xzf -
+      ln -nsf $GIT_SOURCE $VERSION
 
 
 # Update the Current symlink to point to the new version.
@@ -105,25 +78,22 @@
       if [ $NEEDS_ROOT -eq 1 ]; then
         echo "*** Installing system configuration files as root..."
         sudo "$NODE_BIN" "$POW_BIN" --install-system
-        sudo launchctl load -Fw /Library/LaunchDaemons/cx.pow.firewall.plist 2>/dev/null
+        sudo systemctl enable /etc/systemd/system/cx.pow.firewall.service 2>/dev/null
       fi
 
 
 # Start (or restart) Pow.
 
       echo "*** Starting the Pow server..."
-      launchctl unload "$HOME/Library/LaunchAgents/cx.pow.powd.plist" 2>/dev/null || true
-      launchctl load -Fw "$HOME/Library/LaunchAgents/cx.pow.powd.plist" 2>/dev/null
+      systemctl --user reload "$HOME/.config/systemd/cx.pow.powd.service" 2>/dev/null
 
 
 # Show a message about where to go for help.
 
       function print_troubleshooting_instructions() {
         echo
-        echo "For troubleshooting instructions, please see the Pow wiki:"
-        echo "https://github.com/37signals/pow/wiki/Troubleshooting"
+        echo "For troubleshooting instructions, ... tough luck..."
         echo
-        echo "To uninstall Pow, \`curl get.pow.cx/uninstall.sh | sh\`"
       }
 
 
@@ -158,11 +128,7 @@
         # system network configuration.
         function reload_network_configuration() {
           echo "*** Reloading system network configuration..."
-          local location=$(networksetup -getcurrentlocation)
-          networksetup -createlocation "pow$$" >/dev/null 2>&1
-          networksetup -switchtolocation "pow$$" >/dev/null 2>&1
-          networksetup -switchtolocation "$location" >/dev/null 2>&1
-          networksetup -deletelocation "pow$$" >/dev/null 2>&1
+          echo "Not yet ...Linux"
         }
 
         # Try twice to connect to Pow. Bail if it doesn't work.

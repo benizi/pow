@@ -10,11 +10,11 @@ path     = require "path"
 {chown}  = require "./util"
 util     = require "util"
 
-# Import the Eco templates for the `/etc/resolver` and `launchd`
+# Import the Eco templates for the `/etc/resolv.conf` and `systemd`
 # configuration files.
-resolverSource = require "./templates/installer/resolver"
-firewallSource = require "./templates/installer/cx.pow.firewall.plist"
-daemonSource   = require "./templates/installer/cx.pow.powd.plist"
+resolverSource = require "./templates/installer/resolv.conf"
+firewallSource = require "./templates/installer/cx.pow.firewall.service"
+daemonSource   = require "./templates/installer/cx.pow.powd.service"
 
 # `InstallerFile` represents a single file candidate for installation:
 # a pathname, a string of the file's source, and optional flags
@@ -80,7 +80,7 @@ module.exports = class Installer
   # an `Installer` for system firewall and DNS configuration files.
   @getSystemInstaller: (@configuration) ->
     files = [
-      new InstallerFile "/Library/LaunchDaemons/cx.pow.firewall.plist",
+      new InstallerFile "/etc/systemd/system/cx.pow.firewall.service",
         firewallSource(@configuration),
         true
     ]
@@ -93,10 +93,10 @@ module.exports = class Installer
     new Installer files
 
   # Factory method that takes a `Configuration` instance and returns
-  # an `Installer` for the Pow `launchctl` daemon configuration file.
+  # an `Installer` for the Pow `systemctl` daemon configuration file.
   @getLocalInstaller: (@configuration) ->
     new Installer [
-      new InstallerFile "#{process.env.HOME}/Library/LaunchAgents/cx.pow.powd.plist",
+      new InstallerFile "#{process.env.HOME}/.config/systemd/user/cx.pow.powd.service",
         daemonSource(@configuration)
     ]
 
