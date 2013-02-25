@@ -16,7 +16,7 @@ BUNDLE_ONLY=1 npm install --production &>/dev/null
 cp `which node` bin
 
 if [ "$1" == "--install" ]; then
-  POW_ROOT="$HOME/Library/Application Support/Pow"
+  : ${POW_ROOT="$HOME/Pow"}
   rm -fr "$POW_ROOT/Versions/9999.0.0"
   mkdir -p "$POW_ROOT/Versions"
   cp -R "$ROOT/$VERSION" "$POW_ROOT/Versions/9999.0.0"
