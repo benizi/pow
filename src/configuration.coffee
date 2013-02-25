@@ -108,17 +108,17 @@ module.exports = class Configuration
     # Support *.xip.io top-level domains.
     @allDomains.push /\d+\.\d+\.\d+\.\d+\.xip\.io$/, /[0-9a-z]{1,7}\.xip\.io$/
 
-    # Runtime support files live in `~/Library/Application Support/Pow`.
-    @supportRoot = libraryPath "Application Support", "Pow"
+    # Runtime support files live in `~/Pow`.
+    @supportRoot = homePath "Pow"
 
     # `POW_HOST_ROOT`: path to the directory containing symlinks to
     # applications that will be served by Pow. Defaults to
-    # `~/Library/Application Support/Pow/Hosts`.
+    # `~/Pow/Hosts`.
     @hostRoot   = env.POW_HOST_ROOT   ? path.join @supportRoot, "Hosts"
 
     # `POW_LOG_ROOT`: path to the directory that Pow will use to store
-    # its log files. Defaults to `~/Library/Logs/Pow`.
-    @logRoot    = env.POW_LOG_ROOT    ? libraryPath "Logs", "Pow"
+    # its log files. Defaults to `~/Pow/Logs`.
+    @logRoot    = env.POW_LOG_ROOT    ? homePath "Pow", "Logs"
 
     # `POW_RVM_PATH` (**deprecated**): path to the rvm initialization
     # script. Defaults to `~/.rvm/scripts/rvm`.
@@ -215,10 +215,9 @@ module.exports = class Configuration
         , (err) ->
           callback err, hosts
 
-# Convenience wrapper for constructing paths to subdirectories of
-# `~/Library`.
-libraryPath = (args...) ->
-  path.join process.env.HOME, "Library", args...
+# Convenience wrapper for constructing paths to subdirectories of `~`.
+homePath = (args...) ->
+  path.join process.env.HOME, args...
 
 # Strip a trailing `domain` from the given `host`, then generate a
 # sorted array of possible entry names for finding which application
