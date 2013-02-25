@@ -1,0 +1,14 @@
+[Unit]
+Description=POW firewall
+Wants=network.target
+After=network.target
+After=syslog.target
+
+[Service]
+User=root
+BusName=cx.pow.firewall
+ExecStart=iptables -t nat -A PREROUTING -p tcp --dport <%= @httpPort %> -j REDIRECT --to-port <%= @dstPort %>
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
