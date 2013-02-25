@@ -205,19 +205,16 @@ loginExec = (command, callback) ->
       else
         callback null, stdout, stderr
 
-# Invoke `dscl(1)` to find out what shell the user prefers. We cannot
-# rely on `process.env.SHELL` because it always seems to be
-# `/bin/bash` when spawned from `launchctl`, regardless of what the
-# user has set.
+# Use GECOS info to find user shell.  Probably unneeded, as the comments
+# indicated it was to work around a `launchctl` issue.
 getUserShell = (callback) ->
-  command = ["dscl", ".", "-read", "/Users/#{process.env.LOGNAME}", "UserShell"]
+  command = ["getent", "passwd", process.env.LOGNAME]
   exec command, (err, stdout, stderr) ->
     if err
       callback process.env.SHELL
     else
-      if matches = stdout.trim().match /^UserShell: (.+)$/
-        [match, shell] = matches
-        callback shell
+      if parts = stdout.trim().split ':'
+        callback parts[6] || process.env.SHELL
       else
         callback process.env.SHELL
 
