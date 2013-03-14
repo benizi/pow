@@ -17,7 +17,7 @@ module.exports = class Daemon extends EventEmitter
     # `SIGQUIT` signals.
     process.on "SIGINT",  @stop
     process.on "SIGTERM", @stop
-    process.on "SIGQUIT", @stop
+    process.on "SIGQUIT", @quit
 
     # Watch for changes to the host root directory once the daemon has
     # started. When the directory changes and the `restart.txt` file
@@ -105,3 +105,9 @@ module.exports = class Daemon extends EventEmitter
         @stopping = false
         @started  = false
         @emit "stop"
+
+  # Quit the daemon now.
+  quit: =>
+    @httpServer.close()
+    @dnsServer.close()
+    @emit "quit"

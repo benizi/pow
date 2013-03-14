@@ -84,4 +84,5 @@ Configuration.getUserConfiguration (err, configuration) ->
     daemon = new Daemon configuration
     daemon.on "restart", -> process.exit()
     daemon.on "stop", -> process.exit()
+    daemon.on "quit", -> process.exit()
     daemon.start()
