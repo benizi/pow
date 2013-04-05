@@ -61,6 +61,7 @@ module.exports = class HttpServer extends connect.HTTPServer
       x @handleErrorStartingApplication
       o @handleFaviconRequest
       o @handleApplicationNotFound
+      o @handleAppManagerRequest
       o @handleWelcomeRequest
       o @handleRailsAppWithoutRackupFile
       o @handleLocationNotFound
@@ -270,6 +271,20 @@ module.exports = class HttpServer extends connect.HTTPServer
     return next() unless name.length
 
     renderResponse res, 503, "application_not_found", {name, host}
+
+  # If the request is for `/__pow__/apps...` on an unsupported domain (like
+  # `http://localhost/` or `http://127.0.0.1/`), show a page listing all the
+  # Pow apps running or runnable on the current host.
+  handleAppManagerRequest: (req, res, next) =>
+    return next() if req.pow.root
+    return next() unless match = req.url.match /^\/__pow__\/apps(.*)/
+    action = match[1]
+    switch action
+      when "", "/"
+        apps = @rackApplications
+        renderResponse res, 200,"apps_index", {apps}
+      else
+        next()
 
   # If the request is for `/` on an unsupported domain (like
   # `http://localhost/` or `http://127.0.0.1/`), show a page

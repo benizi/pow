@@ -1,0 +1,18 @@
+<%- @renderTemplate "layout", title: "Pow is installed", => %>
+  <section>
+    <% for path in Object.keys(@apps): %>
+    <div>App path: <%= path %>
+      <% for prop in Object.keys(@apps[path]): %>
+      <div><%= prop %>: <%= @apps[path][prop] %></div>
+      <% end %>
+    </div>
+    <% end %>
+    <% for path, app in @apps: %>
+    <div><%= path %>
+      <% for prop, val in app: %>
+        <div><%= prop %>=<%= val %></div>
+      <% end %>
+    </div>
+    <pre><%= @apps %></pre>
+  </section>
+<% end %>

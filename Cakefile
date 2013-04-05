@@ -25,6 +25,7 @@ buildTemplates = (callback) ->
 
   async.parallel [
     compile("http_server/application_not_found.html")
+    compile("http_server/apps_index.html")
     compile("http_server/error_starting_application.html")
     compile("http_server/layout.html")
     compile("http_server/proxy_error.html")

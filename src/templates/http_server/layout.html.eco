@@ -108,6 +108,7 @@
       <li><a href="https://github.com/37signals/pow/wiki/Troubleshooting">Troubleshooting</a></li>
       <li><a href="https://github.com/37signals/pow/wiki/FAQ">Frequently Asked Questions</a></li>
       <li><a href="https://github.com/37signals/pow/issues">Issue Tracker</a></li>
+      <li><a href="/__pow__/apps">Configured Apps</a></li>
     </ul>
   </div>
 </body>
