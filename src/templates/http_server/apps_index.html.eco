@@ -1,4 +1,4 @@
-<%- @renderTemplate "layout", title: "Pow is installed", => %>
+<%- @renderTemplate "layout", title: "Pow apps on localhost", => %>
   <section>
     <% if @error?: %>
     <h2>Error: <%= @error %></h2>
