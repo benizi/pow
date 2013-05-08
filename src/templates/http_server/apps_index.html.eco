@@ -1,18 +1,24 @@
 <%- @renderTemplate "layout", title: "Pow is installed", => %>
   <section>
-    <% for path in Object.keys(@apps): %>
-    <div>App path: <%= path %>
-      <% for prop in Object.keys(@apps[path]): %>
-      <div><%= prop %>: <%= @apps[path][prop] %></div>
-      <% end %>
-    </div>
+    <% if @error?: %>
+    <h2>Error: <%= @error %></h2>
     <% end %>
-    <% for path, app in @apps: %>
-    <div><%= path %>
-      <% for prop, val in app: %>
-        <div><%= prop %>=<%= val %></div>
+    <% if @hostnames?: %>
+      <h1>Pow Apps</h1>
+      <% for name in @hostnames: %>
+        <h2><a href="//<%= name %>.<%= @domain %>"><%= name %></a>
+          <% if app = @running[@hosts[name]?.root]: %>
+            (<%= app.state ? 'dead' %>)
+            <form action="/__pow__/apps/modify" method="POST">
+              <input type="hidden" name="root" value="<%= app.root %>">
+              <input type="submit" name="action" value="Restart">
+              <input type="submit" name="action" value="Quit">
+            </form>
+          <% else if url = @hosts[name]?.url: %>
+            -> <%= url %>
+          <% end %>
+        </h2>
       <% end %>
-    </div>
-    <pre><%= @apps %></pre>
+    <% end %>
   </section>
 <% end %>

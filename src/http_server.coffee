@@ -49,6 +49,7 @@ module.exports = class HttpServer extends connect.HTTPServer
   # applications when the server shuts down.
   constructor: (@configuration) ->
     super [
+      connect.bodyParser()
       o @logRequest
       o @annotateRequest
       o @handlePowRequest
@@ -277,12 +278,38 @@ module.exports = class HttpServer extends connect.HTTPServer
   # Pow apps running or runnable on the current host.
   handleAppManagerRequest: (req, res, next) =>
     return next() if req.pow.root
-    return next() unless match = req.url.match /^\/__pow__\/apps(.*)/
-    action = match[1]
-    switch action
-      when "", "/"
-        apps = @rackApplications
-        renderResponse res, 200,"apps_index", {apps}
+
+    powApps = "/__pow__/apps"
+    return next() if req.url.indexOf powApps
+
+    page = req.url.replace(powApps, '')
+
+    fail = (error) ->
+      renderResponse res, 200, "apps_index", {error}
+
+    {domains} = @configuration
+    domain = if "dev" in domains then "dev" else domains[0]
+
+    switch page
+      when ""
+        running = @rackApplications
+        @configuration.gatherHostConfigurations (err, hosts) =>
+          hostnames = Object.keys(hosts)
+          hostnames.sort()
+          renderResponse res, 200, "apps_index", {running,hosts,hostnames,domain}
+      when "/modify"
+        app = @rackApplications[req.body.root]
+        action = req.body.action?.toLowerCase()
+        if app and action and fn = app[action]
+          fn.call app, (err, result) =>
+            if err?
+              fail "Failed to run action"
+            else
+              res.statusCode = 301
+              res.setHeader "Location", powApps
+              res.end "Redirected to pow app manager"
+        else
+          fail "Something went wrong..."
       else
         next()
 
